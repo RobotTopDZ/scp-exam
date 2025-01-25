@@ -1,0 +1,499 @@
+---
+title: "SCP exam"
+author: "Oussama"
+date: "2025-01-24"
+output: pdf_document
+---
+
+```{r}
+library(tidyverse)
+
+df <- read_csv("cancer issue.csv")
+df
+
+```
+
+# Part 1: Exploratory Data Analysis
+
+## Question 1: What is the distribution of cancer types?
+
+```{r}
+distribution_cancer_type <- df %>% 
+  count(CancerType) %>%
+  arrange(desc(n))
+
+print(distribution_cancer_type)
+
+ggplot(distribution_cancer_type, aes(x = reorder(CancerType,-n),y=n )) +
+  geom_col(width = 0.5)+
+  geom_label(aes(label = n),hjust = 1)+
+  coord_flip()+
+  xlab("Cancer type") +
+  ylab("count") + 
+  labs(title = "distribution of cancer types")
+   
+
+```
+
+## Question 2: What is the average BMI by cancer stage?
+
+```{r}
+ df %>% 
+  group_by(Stage) %>% 
+  summarize(mean_bmi = mean(BMI))
+```
+
+## Question 3: What is the survival distribution by hospital region?
+
+```{r}
+df %>%
+  group_by(HospitalRegion) %>% 
+  count(SurvivalMonths) %>% 
+  summarise(count = sum(n))
+  
+```
+
+## Question 4: What is the tumor size distribution?
+
+```{r}
+df %>% 
+  group_by(TumorSize) %>% 
+  count(TumorSize) %>%
+  arrange(desc(TumorSize))
+```
+
+## Question 5: What is the relationship between tumor size and survival months?
+
+```{r}
+df %>% select(TumorSize,SurvivalMonths) %>% 
+  summarise(correlation = cor(SurvivalMonths,TumorSize))
+
+if (correlation > 0) {
+  paste("There is a positive relationship between Tumor Size and Survival Months the correlation coefficient is ",correlation)
+} else if (correlation < 0) {
+  paste("There is a negative relationship between Tumor Size and Survival Months correlation coefficient is ",correlation)
+} else {
+  print("There is no relationship between TumorSize and SurvivalMonths")
+}
+```
+
+## Question 6: What is the proportion of smokers in the dataset?
+
+```{r}
+smokers_prop <- df %>% filter(SmokingStatus == "Smoker") %>% 
+  summarise(p = (n()/nrow(df))*100)
+
+paste("the proportion or smokers in the dataset is ",smokers_prop,"%")
+```
+
+## Question 7: What is the average tumor size by cancer type?
+
+```{r}
+df %>% group_by(CancerType) %>% 
+  summarise(avg_tumorsize = mean(TumorSize))
+```
+
+## Question 8: Is there a difference in average BMI between smokers and non-smokers?
+
+
+```{r}
+smok <- df %>% filter(SmokingStatus == "Smoker") %>% 
+  summarise(avgbmi = mean(BMI))
+
+non_smok <- df %>% filter(SmokingStatus == "Non-Smoker") %>% 
+  summarise(avgbm = mean(BMI))
+
+print(smok==non_smok)
+```
+
+## Question 9: What is the distribution of cancer stages?
+
+```{r}
+distrib_cancer_stage <- df %>% 
+  count(Stage) %>%
+  arrange(desc(n))
+
+
+ggplot(distrib_cancer_stage, aes(x = reorder(Stage,-n),y=n )) +
+  geom_col(width = 0.5)+
+  geom_label(aes(label = n),hjust = 1)+
+  xlab("Cancer type") +
+  ylab("count") + 
+  labs(title = "distribution of cancer types")
+```
+
+## Question 10: How many patients are in each hospital region?
+
+```{r}
+df %>% group_by(HospitalRegion) %>% 
+  count()
+```
+
+## Question 11: What is the survival rate by cancer type?
+
+```{r}
+df %>% 
+  group_by(CancerType) %>% 
+  summarise(Proportion = (sum(Recurrence == "Yes") / n())*100)
+```
+
+## Question 12: What is the relationship between age and survival months?
+
+```{r}
+df %>% select(Age,SurvivalMonths) %>% 
+  summarise(correlation = cor(Age,SurvivalMonths))
+
+if (correlation > 0) {
+  paste("There is a positive relationship between age and Survival Months the correlation coefficient is ",correlation)
+} else if (correlation < 0) {
+  paste("There is a negative relationship between age and Survival Months correlation coefficient is ",correlation)
+} else {
+  print("There is no relationship between and SurvivalMonths")
+}
+```
+
+## Question 13: What is the most common treatment by cancer type?
+
+```{r}
+df %>% group_by(CancerType) %>% 
+  count(TreatmentType) 
+```
+
+## Question 14: What is the gender distribution of patients?
+
+```{r}
+df %>% group_by(Gender) %>% 
+  count() 
+
+            
+```
+
+## Question 15: How does smoking status vary by hospital region?
+
+```{r}
+df %>% group_by(HospitalRegion,SmokingStatus) %>% 
+  count(SmokingStatus)
+  
+```
+
+## Question 16: What is the average survival months by genetic mutation type?
+
+```{r}
+df %>% group_by(GeneticMarker) %>% 
+  summarise(avg = mean(SurvivalMonths))
+```
+
+## Question 17: What is the distribution of patients by age group?
+
+```{r}
+df %>% group_by(Age) %>% 
+  count()
+```
+
+## Question 18: What are the most common combinations of cancer type and stage?
+
+```{r}
+df %>% group_by(CancerType,Stage) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  head(5)
+```
+
+## Question 19: What is the relationship between BMI and tumor size?
+
+```{r}
+df %>% select(BMI,TumorSize) %>% 
+  summarise(correlation = cor(BMI,TumorSize))
+
+if (correlation > 0) {
+  paste("There is a positive relationship between bmi and tumor size the correlation coefficient is ",correlation)
+} else if (correlation < 0) {
+  paste("There is a negative relationship between bmi and tumor size correlation coefficient is ",correlation)
+} else {
+  print("There is no relationship between bmi and tumor size")
+}
+```
+
+## Question 20: How many patients have a family history of cancer?
+
+```{r}
+hist <- df %>% filter(FamilyHistory == "Yes") %>% 
+  count()
+
+paste("the number of patients that have a family history of cancer is ", hist)
+```
+
+#Part 2: Function Creation and Error Handling
+## Question 1: Create a function to classify age groups 
+
+```{r}
+age_groups <- function(age) {
+  if (age < 18) {
+    return("Child/teen")
+  } else if (age >= 18 & age < 30) {
+    return("Young adult")
+  } else if(age >= 30 & age <60 ){
+    return("Adult")
+  }
+  else{
+    return("Senior")
+  }
+}
+
+df <- df %>% mutate(AgeGroup = sapply(Age, age_groups))
+
+```
+
+## Question 2: Create a function to normalize tumor size.
+
+```{r}
+normalize <- function(tumor_size) {
+  mean_size <- mean(tumor_size)
+  ecarttype <- sd(tumor_size)
+  return((tumor_size - mean_size) / ecarttype)
+}
+
+df <- df %>% mutate(norm_tumorsize = normalize(TumorSize))
+
+df$norm_tumorsize
+
+
+```
+
+## Question 17Part 1: What is the distribution of patients by age group?
+
+```{r}
+df %>% group_by(AgeGroup) %>% 
+  count() %>% 
+  arrange(desc(n))
+```
+
+## Question 3: Create a function to calculate BMI categories
+
+```{r}
+bmi_category <- function(bmi) {
+  if (bmi < 18.5) {
+    return("Underweight")
+  } else if (bmi >= 18.5 & bmi < 25) {
+    return("Normal")
+  } else if (bmi >= 25 & bmi < 30) {
+    return("Overweight")
+  } else {
+    return("Obese")
+  }
+}
+
+df <- df %>% mutate(BMICategory = sapply(BMI,bmi_category))
+
+```
+
+## Question 4: Write a function to check if survival months are valid (non-negative).
+
+```{r}
+check_survmonths <- function(survival_months) {
+  if (survival_months < 0) {
+    return("Invalid")
+  } else {
+    return("Valid")
+  }
+}
+
+df <- df %>% mutate(SurvivalMonthsValidity = sapply(SurvivalMonths, check_survmonths))
+
+```
+
+## Question 5: Develop a function to calculate tumor size as a percentage of maximum size.
+
+```{r}
+tumorsize_percentage <- function(tumor_size) {
+  max_size <- max(tumor_size)
+  return((tumor_size /max_size) * 100)
+}
+
+df <- df %>% mutate(TumorSizePercentage = tumorsize_percentage(TumorSize))
+
+```
+
+## Question 6: Write a function to generate descriptive statistics for a numeric column
+
+```{r}
+descriptive_stats <- function(var) {
+  statistics <-list(
+    Mean = mean(var),
+    Median = median(var),
+    Min = min(var),
+    Max = max(var))
+  return(statistics)
+}
+descriptive_stats(df$TumorSize)
+```
+
+## Question 7: Create a function to filter data by cancer type and stage.
+
+```{r}
+type_stage <- function(data, cancer_type, stage) {
+  filtered_data <- data %>% filter(CancerType == cancer_type & Stage == stage)
+  return(filtered_data)
+}
+
+type_stage(df, "Breast", "II")
+```
+
+## Question 8: Write a function to compute the average survival months for each region.
+
+```{r}
+survival_region <- function() {
+  df %>% group_by(HospitalRegion) %>% 
+  summarise(AvgSurvivalMonths = mean(SurvivalMonths))
+}
+
+survival_region()
+```
+
+
+
+## Question 9: Develop a function to create a summary table for a given variable 
+
+```{r}
+summary_table <- function(variable) {
+  df %>% count(!!sym(variable)) %>%
+    arrange(desc(n))
+}
+variablee = "CancerType"
+summary_table(variablee)
+
+```
+
+## Question 10: Write a function to identify patients with above-average tumor sizes
+
+```{r}
+above_avgtumorsize <- function() {
+  avg_size <- mean(df$TumorSize)
+  df %>%
+  filter(TumorSize > avg_size)
+}
+
+above_avgtumorsize()
+```
+
+## Question 11: Create a function to categorize survival months into short, medium, and long terms
+
+
+```{r}
+categorize_survival <- function(survival_months) {
+  if (survival_months < 12) {
+    return("Short Term")
+  } else if (survival_months >= 12 & survival_months < 60) {
+    return("Medium Term")
+  } else {
+    return("Long Term")
+  }
+}
+
+df <- df %>% mutate(SurvivalCategory = sapply(SurvivalMonths, categorize_survival))
+
+```
+## Question 12: Develop a function to check for missing values in each column
+
+```{r}
+check_missing_values <- function() {
+  colSums(is.na(df))
+}
+
+check_missing_values()
+```
+
+## Question 13: Write a function to calculate the median tumor size for smokers and non-smokers.
+
+```{r}
+median_tumorsize <- function() {
+  df %>% group_by(SmokingStatus) %>%     summarise(MedianTumorsize = median(TumorSize))
+}
+
+median_tumorsize()
+```
+
+## Question 14: Create a function to count the number of patients by gender and cancer type.
+
+```{r}
+count_gender <- function() {
+  df %>% group_by(Gender, CancerType) %>% summarise(Count = n())
+}
+
+count_gender()
+```
+
+## Question 15: Write a function to group data by region and calculate average BMI.
+
+```{r}
+avg_bmi_region <- function() {
+  df %>% group_by(HospitalRegion) %>% summarise(AvgBMI = mean(BMI))
+}
+
+avg_bmi_region()
+```
+
+## Question 16: Develop a function to identify patients with genetic mutations linked to survival rates.
+
+```{r}
+genetic_survival <- function() {
+  df %>% filter(GeneticMarker != "None") %>% group_by(GeneticMarker) %>% summarise(AvgSurvivMonths = mean(SurvivalMonths))
+}
+
+genetic_survival()
+```
+
+## Question 17: Write a function to summarize treatment response rates by cancer stage.
+
+```{r}
+treatment_response <- function() {
+  df %>% group_by(Stage, TreatmentResponse) %>% summarise(Count = n())
+}
+
+treatment_response()
+```
+
+## Question 18:	Create a function to check for outliers in numeric columns.
+
+```{r}
+check_outliers <- function(column) {
+  mean <- mean(column)
+  median <- median(column)
+  
+  down <- mean - median
+  up <- mean + median
+  
+  df %>% filter(column < down | column > up)
+}
+numeric_col <- df$TumorSize
+check_outliers(numeric_col)
+# no outliers in this case
+```
+
+## Question 19: Write a function to calculate the proportion of patients with recurrence by region.
+
+```{r}
+recurrence_region <- function() {
+  df %>% group_by(HospitalRegion) %>% summarise(RecurrenceRate = mean(Recurrence == "Yes"))
+}
+
+recurrence_region()
+```
+
+## Question 20: Develop a function to flag invalid BMI values (e.g., below 10 or above 60).
+
+```{r}
+flag_bmi <- function(bmi) {
+  if (bmi < 10 | bmi > 60) {
+    return("Invalid")
+  } else {
+    return("Valid")
+  }
+}
+
+df <- df %>% mutate(BMIValidity = sapply(BMI, flag_bmi))
+```
+
+
+
+
